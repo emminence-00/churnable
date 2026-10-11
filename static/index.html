@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Churnable — Customer Churn Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;650&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+  <!-- Clean Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="nav-left">
+        <div class="nav-brand">
+          <span class="brand-title">Churnable</span>
+        </div>
+        <div class="model-badge" id="engine-badge">LangGraph • Gemini</div>
+      </div>
+
+      <div class="nav-right">
+        <span class="dataset-pill" id="dataset-pill">750 customers • data/customers.csv</span>
+        <button class="nav-btn" id="btn-preview-data" title="View active CSV dataset">View Data</button>
+        <button class="nav-btn" id="btn-upload-modal" title="Upload custom dataset">Upload CSV</button>
+        <button class="nav-btn" id="btn-regenerate" title="Regenerate synthetic dataset">Regenerate</button>
+        <button class="nav-btn primary" id="btn-new-chat" title="Start new investigation">New Chat</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Centered Chat Application Container -->
+  <main class="chat-app-wrapper">
+
+    <!-- Scrollable Chat Stream -->
+    <div class="chat-scroll-viewport" id="chat-scroll-container">
+      
+      <!-- Welcome Hero State (Visible on initial load) -->
+      <section class="chat-hero" id="chat-hero">
+        <div class="hero-header">
+          <h1 class="hero-title">Predict Customer Churn & Retention</h1>
+          <p class="hero-subtitle">
+            Autonomous agent powered by LangGraph. Investigates customer telemetry — transaction frequency, dormancy, account balances, and friction — to determine who is likely to churn and the main factors responsible.
+          </p>
+        </div>
+
+        <!-- 4 Clean ChatGPT-Style Prompt Cards -->
+        <div class="prompt-cards-grid">
+          <div class="prompt-card" data-prompt="Predict which customers may stop using our FinTech application based on transaction frequency, account activity, balances, and engagement. Show the main factors responsible for churn.">
+            <div class="prompt-card-title">Predict High-Risk Churn</div>
+            <div class="prompt-card-desc">Identify accounts with declining transaction frequency, dormancy, and engagement.</div>
+          </div>
+
+          <div class="prompt-card" data-prompt="Analyze customers with balance declines and account inactivity. Show the primary root-cause drivers responsible for churn.">
+            <div class="prompt-card-title">Balance Decline & Dormancy</div>
+            <div class="prompt-card-desc">Audit accounts with significant balance loss and inactivity over 30 days.</div>
+          </div>
+
+          <div class="prompt-card" data-prompt="Investigate payment friction, failed transactions, and customer complaints to evaluate churn likelihood across cohorts.">
+            <div class="prompt-card-title">Payment Failures & Friction</div>
+            <div class="prompt-card-desc">Quantify how failed digital transfers and complaints accelerate churn probability.</div>
+          </div>
+
+          <div class="prompt-card" data-prompt="Formulate personalized retention interventions and re-engagement playbooks for our top at-risk customer accounts.">
+            <div class="prompt-card-title">Retention Strategy Playbook</div>
+            <div class="prompt-card-desc">Prescribe tailored incentives, fee discounts, and executive outreach for at-risk users.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active Message Thread Stream -->
+      <section class="messages-stream" id="messages-stream"></section>
+
+      <!-- Thinking Indicator -->
+      <div class="thinking-state" id="thinking-state" style="display: none;">
+        <div class="thinking-spinner"></div>
+        <span id="thinking-label">Agent is investigating customer telemetry with LangGraph & Gemini...</span>
+      </div>
+
+    </div>
+
+    <!-- Fixed Bottom Chat Input Capsule (ChatGPT Style) -->
+    <footer class="chat-input-wrapper">
+      <form class="chat-input-capsule" id="chat-form">
+        <textarea 
+          id="chat-textarea" 
+          rows="1" 
+          placeholder="Ask ChurnGuard to predict churn, evaluate customer cohorts, or investigate root causes..." 
+          required></textarea>
+        <button type="submit" id="btn-send-message" class="send-arrow-btn" title="Send message">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="19" x2="12" y2="5"></line>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
+        </button>
+      </form>
+      <div class="input-disclaimer">
+        Churnable evaluates behavioral telemetry using autonomous LangGraph tools. Predictions are generated from empirical customer records.
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Full Dataset Browser Modal (All Customers with Pagination & Search) -->
+  <div id="modal-preview" class="modal-backdrop" style="display: none;">
+    <div class="modal-box modal-wide">
+      <div class="modal-head">
+        <div>
+          <h4>Active Customer Dataset (All Records)</h4>
+          <p class="modal-desc" id="modal-dataset-desc">data/customers.csv • Full banking & telemetry records</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <a href="/api/download-sample-csv" class="nav-btn" download style="text-decoration: none;">Download CSV</a>
+          <button class="modal-close-btn" id="modal-preview-close">&times;</button>
+        </div>
+      </div>
+      <div class="modal-toolbar">
+        <input type="text" id="preview-search-input" placeholder="Search across all customer records and columns...">
+        <div class="modal-pagination">
+          <button class="nav-btn" id="btn-page-prev">Previous</button>
+          <span id="preview-page-info">Page 1 of 15 (750 accounts)</span>
+          <button class="nav-btn" id="btn-page-next">Next</button>
+        </div>
+      </div>
+      <div class="modal-table-scroll">
+        <table class="clean-table" id="preview-table">
+          <thead id="preview-thead"></thead>
+          <tbody id="preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Modal -->
+  <div id="modal-upload" class="modal-backdrop" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h4>Upload Customer Dataset</h4>
+        <button class="modal-close-btn" id="modal-upload-close">&times;</button>
+      </div>
+      <div class="modal-content">
+        <p class="modal-desc">Upload a custom CSV customer file with behavioral attributes.</p>
+        <div class="drop-area" id="upload-dropzone">
+          <div class="drop-title">Select or drag CSV file here</div>
+          <div class="drop-sub">CSV format up to 5 MB</div>
+          <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+        </div>
+        <div id="upload-selected-box" class="upload-selected" style="display: none;">
+          <span id="selected-file-name">dataset.csv</span>
+          <button id="btn-submit-upload" class="upload-confirm-btn">Upload</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+
+</html>
