@@ -37,12 +37,23 @@
   --risk-low-text: #059669;
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
+  /* Mobile-first spacing scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -54,6 +65,7 @@ body {
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
+  font-size: 16px; /* Prevent zoom on iOS inputs */
 }
 
 /* ==========================================================================
@@ -73,16 +85,18 @@ body {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 var(--space-md);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-sm);
 }
 
 .nav-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-sm);
+  min-width: 0;
 }
 
 .nav-brand {
@@ -96,6 +110,7 @@ body {
   font-weight: 700;
   letter-spacing: -0.3px;
   color: var(--text-primary);
+  white-space: nowrap;
 }
 
 .brand-divider {
@@ -117,12 +132,15 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: 4px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .dataset-pill {
@@ -132,18 +150,24 @@ body {
   padding: 5px 10px;
   border-radius: 6px;
   border: 1px solid var(--border-subtle);
+  white-space: nowrap;
 }
 
 .nav-btn {
   background: var(--bg-app);
   color: var(--text-secondary);
   border: 1px solid var(--border-subtle);
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
+  min-height: 40px; /* Touch target */
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-btn:hover {
@@ -160,6 +184,33 @@ body {
 
 .nav-btn.primary:hover {
   background: #2D3748;
+}
+
+/* Mobile navbar adjustments */
+@media (max-width: 640px) {
+  .dataset-pill {
+    display: none;
+  }
+  
+  .model-badge {
+    display: none;
+  }
+  
+  .nav-btn span {
+    display: none;
+  }
+  
+  .nav-btn {
+    padding: 8px;
+  }
+  
+  .nav-btn.primary {
+    padding: 8px 12px;
+  }
+  
+  .nav-btn.primary span {
+    display: inline;
+  }
 }
 
 /* ==========================================================================
